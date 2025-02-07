@@ -6,6 +6,7 @@ import {
   CircularProgress,
   Chip,
   Box,
+  Typography,
 } from '@mui/material';
 import { agentService } from '../services/AgentService';
 import { SystemInfo as SystemInfoType } from '../types';
@@ -53,16 +54,18 @@ export const SystemInfo: React.FC = () => {
         <ListItemText
           primary="Features"
           secondary={
-            <Box sx={{ mt: 1 }}>
-              {systemInfo.features.map((feature) => (
-                <Chip
-                  key={feature}
-                  label={feature}
-                  size="small"
-                  sx={{ mr: 1, mb: 1 }}
-                />
-              ))}
-            </Box>
+            <Typography component="span" variant="body2">
+              <Box sx={{ mt: 1 }}>
+                {systemInfo.features.map((feature) => (
+                  <Chip
+                    key={feature}
+                    label={feature}
+                    size="small"
+                    sx={{ mr: 1, mb: 1 }}
+                  />
+                ))}
+              </Box>
+            </Typography>
           }
         />
       </ListItem>
