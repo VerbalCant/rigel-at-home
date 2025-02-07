@@ -1,1 +1,11 @@
- 
+{
+  "name": "Rigel Full Stack",
+  "dockerComposeFile": [
+    "docker/compose.base.yml",
+    "docker/compose.dev.yml"
+  ],
+  "service": "server",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [3000, 4000, 5432, 6379],
+  "postCreateCommand": "bundle install && yarn install"
+} 

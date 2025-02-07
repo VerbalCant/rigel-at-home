@@ -1,54 +1,19 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+FROM ruby:3.2.2-slim
 
-# Install basic dependencies
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-    build-essential \
-    curl \
-    git \
-    libpq-dev \
-    postgresql-client \
-    python3 \
-    python3-pip \
-    libffi-dev \
-    libreadline-dev \
-    libyaml-dev \
-    libssl-dev \
-    zlib1g-dev \
-    # Electron system dependencies
-    libglib2.0-0 \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libgtk-3-0 \
-    libgbm1 \
-    libasound2 \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# Install required packages
+RUN apt-get update -qq && \
+    apt-get install -y build-essential git libpq-dev libvips nodejs postgresql-client
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g yarn
+WORKDIR /rails
 
-# Install rbenv and ruby-build
-RUN git clone https://github.com/rbenv/rbenv.git ~/.rbenv \
-    && echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc \
-    && echo 'eval "$(rbenv init -)"' >> ~/.bashrc \
-    && git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+# Copy Gemfile and Gemfile.lock from your build context (they should be in your server/ folder)
+COPY Gemfile Gemfile.lock ./
 
-# Install Ruby
-ENV PATH /root/.rbenv/bin:$PATH
-RUN eval "$(rbenv init -)" \
-    && rbenv install 3.2.2 \
-    && rbenv global 3.2.2 \
-    && gem install bundler
+# Install gems in the default location (/usr/local/bundle)
+RUN bundle install
 
-# Install Python packages
-RUN pip3 install --no-cache-dir \
-    openai \
-    requests \
-    python-dotenv
+# Copy the rest of your Rails app
+COPY . .
 
-WORKDIR /workspace
+EXPOSE 3000
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]

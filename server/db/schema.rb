@@ -1,0 +1,54 @@
+# This file is auto-generated from the current state of the database. Instead
+# of editing this file, please use the migrations feature of Active Record to
+# incrementally modify your database, and then regenerate this schema definition.
+#
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
+#
+# It's strongly recommended that you check this file into your version control system.
+
+ActiveRecord::Schema[7.1].define(version: 2025_02_07_013159) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "agents", force: :cascade do |t|
+    t.string "name"
+    t.string "status"
+    t.datetime "last_seen_at"
+    t.jsonb "capabilities"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "task_definitions", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.text "code"
+    t.jsonb "requirements"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.text "code"
+    t.string "status"
+    t.bigint "agent_id"
+    t.jsonb "result"
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "task_definition_id", null: false
+    t.jsonb "progress_data"
+    t.index ["agent_id"], name: "index_tasks_on_agent_id"
+    t.index ["task_definition_id"], name: "index_tasks_on_task_definition_id"
+  end
+
+  add_foreign_key "tasks", "agents"
+  add_foreign_key "tasks", "task_definitions"
+end
