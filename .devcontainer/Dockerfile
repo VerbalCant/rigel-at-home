@@ -15,6 +15,16 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     libyaml-dev \
     libssl-dev \
     zlib1g-dev \
+    # Electron system dependencies
+    libglib2.0-0 \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgtk-3-0 \
+    libgbm1 \
+    libasound2 \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
@@ -41,4 +51,4 @@ RUN pip3 install --no-cache-dir \
     requests \
     python-dotenv
 
-WORKDIR /workspace 
+WORKDIR /workspace
