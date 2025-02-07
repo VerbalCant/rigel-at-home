@@ -12,6 +12,7 @@ import {
 import { TaskList } from './components/TaskList';
 import { SystemInfo } from './components/SystemInfo';
 import { AgentStatus } from './components/AgentStatus';
+import { LoginButton } from './components/LoginButton';
 import { taskService } from './services/TaskService';
 import { agentService } from './services/AgentService';
 
@@ -57,6 +58,7 @@ const App: React.FC = () => {
             Rigel@Home Agent
           </Typography>
           <AgentStatus />
+          <LoginButton />
         </Toolbar>
       </AppBar>
 

@@ -3,14 +3,22 @@ module Api
     skip_before_action :authenticate_request, only: [:register]
 
     def register
+      Rails.logger.info("ALAINA: Received agent registration request with params: #{params.inspect}")
+      Rails.logger.info("ALAINA: Request headers: #{request.headers.to_h.select { |k, _| k.start_with?('HTTP_') }}")
+      
       agent_attrs = agent_params
       agent_attrs[:status] = 'online'
-      puts "ALAINA: Attempting to create agent with attributes: #{agent_attrs.inspect}"
+      Rails.logger.info("ALAINA: Attempting to create agent with attributes: #{agent_attrs.inspect}")
+      
       agent = Agent.new(agent_attrs)
 
       if agent.save
         token = JsonWebToken.encode(agent_id: agent.id)
-        puts "ALAINA: New agent registered: #{agent.name} with capabilities: #{agent.capabilities}"
+        Rails.logger.info("ALAINA: Successfully registered agent: #{agent.name} with capabilities: #{agent.capabilities}")
+        
+        response.headers['Access-Control-Expose-Headers'] = 'Authorization'
+        response.headers['Authorization'] = "Bearer #{token}"
+        
         render json: {
           token: token,
           agent: {
@@ -21,8 +29,8 @@ module Api
           }
         }, status: :created
       else
-        puts "ALAINA: Agent registration failed: #{agent.errors.full_messages}"
-        puts "ALAINA: Invalid agent attributes: #{agent.attributes.inspect}"
+        Rails.logger.error("ALAINA: Agent registration failed: #{agent.errors.full_messages}")
+        Rails.logger.error("ALAINA: Invalid agent attributes: #{agent.attributes.inspect}")
         render json: { errors: agent.errors.full_messages }, status: :unprocessable_entity
       end
     end
@@ -33,23 +41,23 @@ module Api
     end
 
     def update_status
-      puts "ALAINA: Attempting to update agent status to: #{status_params[:status]}"
+      Rails.logger.info("ALAINA: Attempting to update agent status to: #{status_params[:status]}")
       if current_agent.update(status_params)
-        puts "ALAINA: Agent #{current_agent.name} status updated to: #{current_agent.status}"
+        Rails.logger.info("ALAINA: Agent #{current_agent.name} status updated to: #{current_agent.status}")
         render json: { status: 'ok', agent_status: current_agent.status }
       else
-        puts "ALAINA: Failed to update agent status: #{current_agent.errors.full_messages}"
+        Rails.logger.error("ALAINA: Failed to update agent status: #{current_agent.errors.full_messages}")
         render json: { errors: current_agent.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def update_capabilities
-      puts "ALAINA: Attempting to update agent capabilities to: #{capabilities_params.inspect}"
+      Rails.logger.info("ALAINA: Attempting to update agent capabilities to: #{capabilities_params.inspect}")
       if current_agent.update(capabilities: capabilities_params)
-        puts "ALAINA: Agent #{current_agent.name} capabilities updated: #{current_agent.capabilities}"
+        Rails.logger.info("ALAINA: Agent #{current_agent.name} capabilities updated: #{current_agent.capabilities}")
         render json: { status: 'ok', capabilities: current_agent.capabilities }
       else
-        puts "ALAINA: Failed to update agent capabilities: #{current_agent.errors.full_messages}"
+        Rails.logger.error("ALAINA: Failed to update agent capabilities: #{current_agent.errors.full_messages}")
         render json: { errors: current_agent.errors.full_messages }, status: :unprocessable_entity
       end
     end
