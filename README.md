@@ -57,6 +57,125 @@ This will start:
 - PostgreSQL on port 5432
 - Redis on port 6379
 
+### Authentication Setup
+
+The application uses OAuth2 for authentication. Currently supported providers:
+- Google OAuth2 (implemented)
+- Apple Sign In (planned)
+- Microsoft Office 365 (planned)
+
+#### Managing Rails Credentials
+
+The application uses Rails' encrypted credentials system to securely store sensitive information like OAuth client IDs and secrets. The credentials are encrypted with a master key stored in `config/master.key` (not committed to version control).
+
+To work with credentials:
+
+1. Ensure you have the master key:
+   - For development, get the `master.key` file from a team member
+   - Place it in `server/config/master.key`
+   - Never commit this file to version control
+
+2. View current credentials:
+```bash
+docker compose -f docker/compose.base.yml -f docker/compose.dev.yml exec server rails credentials:show
+```
+
+3. Edit credentials:
+```bash
+# Using vim (default)
+docker compose -f docker/compose.base.yml -f docker/compose.dev.yml exec server rails credentials:edit
+
+# Using VS Code
+EDITOR="code --wait" docker compose -f docker/compose.base.yml -f docker/compose.dev.yml exec server rails credentials:edit
+```
+
+4. Structure your credentials like this:
+```yaml
+# Used by Rails for signing cookies, etc.
+secret_key_base: your_secret_key_base
+
+# OAuth Providers
+google:
+  client_id: your_google_client_id
+  client_secret: your_google_client_secret
+
+# Add other providers similarly
+apple:
+  client_id: your_apple_client_id
+  client_secret: your_apple_client_secret
+
+microsoft:
+  client_id: your_microsoft_client_id
+  client_secret: your_microsoft_client_secret
+```
+
+#### Setting up Google OAuth2
+
+1. Create a project in the [Google Cloud Console](https://console.cloud.google.com/)
+2. Enable the Google OAuth2 API
+3. Create OAuth 2.0 credentials:
+   - Application type: Web application
+   - Authorized JavaScript origins: 
+     - `http://localhost:3000` (development)
+     - `http://localhost:3001` (development)
+     - Your production URLs
+   - Authorized redirect URIs:
+     - `http://localhost:3000/api/auth/auth/google_oauth2/callback` (development)
+     - Your production callback URL
+
+4. Add your credentials to Rails:
+```bash
+EDITOR="vim" rails credentials:edit
+```
+
+Add the following structure:
+```yaml
+google:
+  client_id: your_client_id_here
+  client_secret: your_client_secret_here
+```
+
+#### Adding New OAuth Providers
+
+To add support for a new OAuth provider:
+
+1. Add the provider gem to `server/Gemfile`:
+```ruby
+gem 'omniauth-provider-name'
+```
+
+2. Configure the provider in `server/config/initializers/devise.rb`:
+```ruby
+config.omniauth :provider_name,
+                Rails.application.credentials.dig(:provider, :client_id),
+                Rails.application.credentials.dig(:provider, :client_secret),
+                scope: 'desired_scopes'
+```
+
+3. Add credentials in Rails:
+```yaml
+provider_name:
+  client_id: your_client_id
+  client_secret: your_client_secret
+```
+
+4. Add the provider to the User model in `server/app/models/user.rb`:
+```ruby
+devise :omniauthable, omniauth_providers: [:google_oauth2, :your_provider]
+```
+
+5. Add the provider to the login options in `server/app/controllers/api/auth_test_controller.rb`
+
+6. Update the frontend to support the new provider in `agent/src/renderer/components/LoginButton.tsx`
+
+#### User Model
+
+Users created through OAuth will have the following fields:
+- `email`: User's email from OAuth provider
+- `name`: User's full name
+- `provider`: OAuth provider name (e.g., 'google_oauth2')
+- `uid`: Unique identifier from the provider
+
 ### Development Workflow
 
 #### Using the Development Environment
