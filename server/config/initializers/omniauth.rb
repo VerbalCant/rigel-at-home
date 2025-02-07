@@ -14,15 +14,8 @@ OmniAuth.config.request_validation_phase = lambda { |env|
   end
 }
 
-# Allow test mode in development
+# Configure OmniAuth to allow GET requests in development
 if Rails.env.development?
-  OmniAuth.config.test_mode = true
-  OmniAuth.config.mock_auth[:default] = OmniAuth::AuthHash.new({
-    provider: 'developer',
-    uid: '123545',
-    info: {
-      name: 'Test User',
-      email: 'test@example.com'
-    }
-  })
+  OmniAuth.config.allowed_request_methods = [:post, :get]
+  OmniAuth.config.silence_get_warning = true
 end 

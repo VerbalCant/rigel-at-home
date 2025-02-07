@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  # Devise/OmniAuth routes with custom path
+  devise_for :users,
+             path: 'api/auth',
+             controllers: {
+               omniauth_callbacks: 'api/omniauth_callbacks'
+             },
+             defaults: { format: :json }
+
   # API routes that don't need Devise/OmniAuth
   namespace :api do
     # Agent management
@@ -26,14 +34,6 @@ Rails.application.routes.draw do
     get 'auth/login_options', to: 'auth_test#login_options'
     get 'auth/test', to: 'auth_test#test_auth'
   end
-
-  # Devise/OmniAuth routes with custom path
-  devise_for :users,
-             path: 'api/auth',
-             controllers: {
-               omniauth_callbacks: 'api/auth'
-             },
-             defaults: { format: :json }
 
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check

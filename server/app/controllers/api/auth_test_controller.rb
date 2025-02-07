@@ -8,15 +8,15 @@ module Api
       options = {
         providers: {
           google: {
-            url: user_google_oauth2_omniauth_authorize_path,
+            url: "/api/auth/auth/google_oauth2",
             name: "Google"
           },
           apple: {
-            url: user_apple_omniauth_authorize_path,
+            url: "/api/auth/auth/apple",
             name: "Apple"
           },
           microsoft: {
-            url: user_microsoft_office365_omniauth_authorize_path,
+            url: "/api/auth/auth/microsoft_office365",
             name: "Microsoft"
           }
         }

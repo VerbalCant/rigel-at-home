@@ -285,7 +285,13 @@ Devise.setup do |config|
   config.omniauth :google_oauth2,
                   Rails.application.credentials.dig(:google, :client_id),
                   Rails.application.credentials.dig(:google, :client_secret),
-                  scope: 'email,profile'
+                  {
+                    scope: 'email,profile',
+                    prompt: 'select_account',
+                    image_aspect_ratio: 'square',
+                    image_size: 50,
+                    access_type: 'offline'
+                  }
 
   config.omniauth :apple,
                   Rails.application.credentials.dig(:apple, :client_id),

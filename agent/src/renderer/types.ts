@@ -21,7 +21,24 @@ export interface Task {
 }
 
 export interface TaskProgress {
+  taskId: number;
   percent: number;
   status: string;
   message?: string;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  provider: string;
+}
+
+export interface LoginOptions {
+  providers: {
+    [key: string]: {
+      url: string;
+      name: string;
+    };
+  };
 }
