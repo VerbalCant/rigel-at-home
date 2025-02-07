@@ -1,0 +1,32 @@
+{
+    "name": "Rigel@Home Development",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "rebornix.Ruby",
+                "castwide.solargraph",
+                "kaiwood.endwise",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "ms-python.python",
+                "ms-python.vscode-pylance"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "editor.formatOnSave": true,
+                "editor.rulers": [80, 100],
+                "files.trimTrailingWhitespace": true
+            }
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "forwardPorts": [3000, 5432, 6379],
+    "postCreateCommand": "bundle install && yarn install",
+    "remoteUser": "root"
+} 
