@@ -22,6 +22,25 @@ class AgentService {
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private token: string | null = null;
 
+  private getAxiosConfig() {
+    const config: { headers: Record<string, string> } = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    };
+
+    if (this.token) {
+      config.headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    return config;
+  }
+
+  getToken() {
+    return this.token;
+  }
+
   async initialize() {
     try {
       console.log('Getting system info...');
@@ -39,11 +58,10 @@ class AgentService {
       };
       console.log('Register payload:', registerData);
 
-      const response = await axios.post(registerUrl, registerData);
+      const response = await axios.post(registerUrl, registerData, this.getAxiosConfig());
       console.log('Register response:', response.data);
 
       this.token = response.data.token;
-      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
 
       this.startHeartbeat();
       return response.data;
@@ -57,6 +75,7 @@ class AgentService {
           url: error.config?.url,
           method: error.config?.method,
           data: error.config?.data,
+          headers: error.config?.headers
         }
       });
       throw error;
@@ -99,7 +118,7 @@ class AgentService {
   private async sendHeartbeat() {
     try {
       console.log('Sending heartbeat...');
-      await axios.post(`${API_BASE_URL}/agents/heartbeat`);
+      await axios.post(`${API_BASE_URL}/agents/heartbeat`, {}, this.getAxiosConfig());
       this.notifyStatusSubscribers('online');
     } catch (error) {
       console.error('Failed to send heartbeat:', error);
@@ -115,7 +134,7 @@ class AgentService {
   async updateStatus(status: AgentStatus) {
     try {
       console.log('Updating status to:', status);
-      await axios.put(`${API_BASE_URL}/agents/status`, { status });
+      await axios.put(`${API_BASE_URL}/agents/status`, { status }, this.getAxiosConfig());
       this.notifyStatusSubscribers(status);
     } catch (error) {
       console.error('Failed to update status:', error);

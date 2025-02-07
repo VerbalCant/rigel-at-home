@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Task, TaskProgress } from '../types';
 import { API_BASE_URL } from '../config';
+import { agentService } from './AgentService';
 
 // Mock IPC for browser-only development
 const mockIpc = {
@@ -26,6 +27,17 @@ class TaskService {
     ipcRenderer.on('task-progress', (progress: TaskProgress) => {
       this.progressSubscribers.forEach(callback => callback(progress));
     });
+  }
+
+  private getAxiosConfig() {
+    const token = agentService.getToken();
+    return {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : undefined
+      }
+    };
   }
 
   subscribe(callback: TaskUpdateCallback) {
@@ -59,7 +71,7 @@ class TaskService {
 
   private async pollTasks() {
     try {
-      const response = await axios.get<Task[]>(`${API_BASE_URL}/tasks`);
+      const response = await axios.get<Task[]>(`${API_BASE_URL}/tasks`, this.getAxiosConfig());
       this.subscribers.forEach(callback => callback(response.data));
     } catch (error) {
       console.error('Failed to poll tasks:', error);
@@ -70,9 +82,9 @@ class TaskService {
     try {
       await axios.put(`${API_BASE_URL}/tasks/${taskId}/progress`, {
         status: 'running'
-      });
+      }, this.getAxiosConfig());
       const result = await ipcRenderer.invoke('execute-task', { id: taskId });
-      await axios.put(`${API_BASE_URL}/tasks/${taskId}/complete`, { result });
+      await axios.put(`${API_BASE_URL}/tasks/${taskId}/complete`, { result }, this.getAxiosConfig());
     } catch (error) {
       console.error('Failed to start task:', error);
       throw error;
@@ -83,7 +95,7 @@ class TaskService {
     try {
       await axios.put(`${API_BASE_URL}/tasks/${taskId}/fail`, {
         error_message: 'Task stopped by user'
-      });
+      }, this.getAxiosConfig());
     } catch (error) {
       console.error('Failed to stop task:', error);
       throw error;
